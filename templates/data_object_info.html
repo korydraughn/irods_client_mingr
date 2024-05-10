@@ -1,0 +1,113 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Minimal iRODS Web Application</title>
+
+        <style>
+            .grid-container {
+                display: grid;
+                grid-template-columns: 125px auto;
+                padding-bottom: 20px;
+            }
+
+            .grid-container-replicas > div {
+                padding-bottom: 10px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <h1>Minimal iRODS Web Application - Data Object Information</h1>
+
+        <h2>Data Object: {{logical_path}}</h2>
+        <h2>Data ID: {{data_id}}</h2>
+
+        <p>
+            <form action="" method="post">
+                <input name="data_id" type="text" value="{{data_id}}" hidden required />
+                <button>Delete Data Object</button>
+            </form>
+        </p>
+
+        <h3>Replica Information</h3>
+
+        {% for d in replicas %}
+        <div class="grid-container">
+            <div>Replica Number: </div>
+            <div>{{d[2]}}</div>
+
+            <div>Status: </div>
+            <div>{{d[3]}}</div>
+
+            <div>Size <i>(Catalog)</i>: </div>
+            <div>{{d[4]}} bytes</div>
+
+            <div>Physical Path: </div>
+            <div>{{d[5]}}</div>
+
+            <div>Checksum: </div>
+            <div>{{d[6]}}</div>
+
+            <div>Resource Name: </div>
+            <div>{{d[7]}}</div>
+
+            <div>Created At: </div>
+            <div>{{d[8]}}</div>
+
+            <div>Modified At: </div>
+            <div>{{d[9]}}</div>
+        </div>
+        {% endfor %}
+
+        <h3>Permissions</h3>
+
+        {% if permissions %}
+            {% for p in permissions %}
+            <div class="grid-container">
+                <div>Username: </div>
+                <div>{{p['name']}}#{{p['zone']}}</div>
+
+                <div>User Type: </div>
+                <div>{{p['type']}}</div>
+
+                <div>Permission: </div>
+                <div>{{p['perm']}}</div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <p>- No permissions found -</p>
+        {% endif %}
+    </body>
+
+    <!-- jQuery
+    <script
+        src="https://code.jquery.com/jquery-3.7.1.slim.min.js"
+        integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8="
+        crossorigin="anonymous">
+    </script>
+
+    <script>
+        "use strict";
+
+        $(function() {
+            $("button#view_details").on("click", function() {
+                console.log('clicked view details button!');
+
+                // Find the data id associated with the table row and submit
+                // a request to fetch the details of the data object.
+                var id = $(this).data('irods-data-id');
+                console.log('view details id = ' + id);
+            });
+
+            $("button#delete").on("click", function() {
+                console.log('clicked delete button!');
+
+                // Find the data id associated with the table row and submit
+                // a request to fetch the details of the data object.
+                var id = $(this).data('irods-data-id');
+                console.log('delete id = ' + id);
+            });
+        });
+    </script>
+    -->
+</html>

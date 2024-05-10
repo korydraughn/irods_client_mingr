@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Minimal iRODS Web Application</title>
+    </head>
+
+    <body>
+        <h1>Minimal iRODS Web Application - Log In</h1>
+
+        <form action="{{ url_for('login') }}" method="post">
+            <div>
+                <label for="username">Username: </label>
+                <input name="username" type="text" required />
+            </div>
+
+            <div>
+                <label for="password">Password: </label>
+                <input name="password" type="password" required />
+            </div>
+
+            <div>
+                <button>Log In</button>
+            </div>
+        </form>
+    </body>
+</html>
