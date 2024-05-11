@@ -1,63 +1,95 @@
 <!doctype html>
 <html>
     <head>
-        <title>Minimal iRODS Web Application</title>
+        <title>{{ title }} - MinGR</title>
+
+        <style>
+            .flex-container {
+                display: flex;
+            }
+
+            .flex-item > h2 {
+                margin-top: 0;
+            }
+
+            .flex-item:nth-child(1) {
+                padding-right: 2rem;
+            }
+
+            .flex-item nav ul {
+                margin-top: 0;
+            }
+        </style>
     </head>
 
     <body>
-        <h1>Minimal iRODS Web Application - Filesystem</h1>
+        <h1>Minimalist GUI for iRODS - {{ title }}</h1>
 
-        <div>
-            <h2>Current Working Collection: {{current_collection}}</h2>
-            <form action="{{ url_for('filesystem') }}" method="post">
-                <label>Change Collection To: </label>
-                <input name="collection" type="text" value="{{current_collection}}" required />
-                <button>Go</button>
-            </form>
-
-            <div>
-                <h3>Collections</h3>
-
-                {% if collections %}
-                <ul>
-                    {% for id, c in collections %}
-                    <li>{{c}}</li>
-                    {% endfor %}
-                </ul>
-                {% else %}
-                <p>- No collections found - </p>
-                {% endif %}
+        <div class="flex-container">
+            <div class="flex-item">
+                <nav>
+                    <ul>
+                        <li><a href="{{ url_for('logout') }}">Log Out</a></li>
+                        <li><a href="{{ url_for('filesystem') }}">Filesystem Explorer</a></li>
+                        <li><a href="{{ url_for('query') }}">Query</a></li>
+                        <li><a href="{{ url_for('rule_execution') }}">Rule Execution</a></li>
+                        <li><a href="#">About</a></li>
+                        <li><a href="#">Contact</a></li>
+                    </ul>
+                </nav>
             </div>
 
-            <div>
-                <h3>Data Objects</h3>
+            <div class="flex-item">
+                <h2>Current Working Collection: {{ current_collection }}</h2>
 
-                {% if data_objects %}
-                <table>
-                    <tr>
-                        <th style="text-align: start; padding-right: 5em;">Name</th>
-                        <th style="text-align: start;">Size (in bytes)</th>
-                        <th>Action</th>
-                    </tr>
-                    {% for id, _, dn, sz in data_objects %}
-                    <tr>
-                        <td>{{dn}}</td>
-                        <td style="text-align: end;">{{sz}}</td>
-                        <td><button id="view_details" data-irods-data-id="{{id}}">View</button></td>
-                        <td><button id="delete" data-irods-data-id="{{id}}">Delete</button></td>
-                    </tr>
-                    {% endfor %}
-                </table>
-
-                <!--<form id="for_data_object_info" action="{{ url_for('data_object_info') }}" method="post" target="_blank" hidden>-->
-                <!--<form id="for_data_object_info" action="{{ url_for('data_object_info') }}" method="post" target="_self" hidden>-->
-                <form id="for_data_object_info" action="/data-object-info" method="get" target="_self" hidden>
-                    <input name="data_id" type="text" required />
-                    <button></button>
+                <form action="{{ url_for('filesystem') }}" method="get">
+                    <label>Change Collection To: </label>
+                    <input name="collection" type="text" value="{{ current_collection }}" required />
+                    <button>Go</button>
                 </form>
-                {% else %}
-                <p>- No data objects found - </p>
-                {% endif %}
+
+                <div>
+                    <h3>Collections</h3>
+
+                    {% if collections %}
+                    <ul>
+                        {% for id, c in collections %}
+                        <li>{{ c }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p>- No collections found - </p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <h3>Data Objects</h3>
+
+                    {% if data_objects %}
+                    <table>
+                        <tr>
+                            <th style="text-align: start; padding-right: 5em;">Name</th>
+                            <th style="text-align: start;">Size (in bytes)</th>
+                            <th>Action</th>
+                        </tr>
+                        {% for id, _, dn, sz in data_objects %}
+                        <tr>
+                            <td>{{ dn }}</td>
+                            <td style="text-align: end;">{{ sz }}</td>
+                            <td><button id="view_details" data-irods-data-id="{{ id }}">View</button></td>
+                            <td><button id="delete" data-irods-data-id="{{ id }}">Delete</button></td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+
+                    <form id="for_data_object_info" action="/data-object-info" method="get" hidden>
+                        <input name="data_id" type="text" required />
+                        <button></button>
+                    </form>
+                    {% else %}
+                    <p>- No data objects found - </p>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </body>

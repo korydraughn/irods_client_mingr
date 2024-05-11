@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
     <head>
-        <title>Minimal iRODS Web Application</title>
+        <title>{{ title }} - MinGR</title>
 
         <style>
             .results-container {
@@ -11,7 +11,7 @@
     </head>
 
     <body>
-        <h1>Minimal iRODS Web Application - Query</h1>
+        <h1>Minimalist GUI for iRODS - {{ title }}</h1>
 
         <h2>Query Input</h2>
         <div>
@@ -40,7 +40,7 @@
                 const query_string = $('textarea#query_string').val();
                 const expected_data_type = 'text'; // This is how the formatting is maintained.
                 
-                $.get('/execute_query', {query_string: query_string}, function(data) {
+                $.get('/query', {query_string: query_string}, function(data) {
                     $('#previous_query_string').text(query_string);
                     $('#results').text(data);
                 }, expected_data_type);

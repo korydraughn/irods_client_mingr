@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+    <head>
+        <title>{{ title }} - MinGR</title>
+    </head>
+
+    <body>
+        <h1>Minimalist GUI for iRODS - {{ title }}</h1>
+
+        <h2>Rule Code Input</h2>
+
+        <div>
+            <div><label for="plugin_instance">Choose a rule engine plugin to execute code against:</label></div>
+            <div>
+                <select id="plugin_instance" name="rep_instance" required>
+                    <option value="">-- All plugins --</option>
+                    {% if plugin_instances %}
+                        {% for p in plugin_instances %}
+                    <option value="{{ p }}">{{ p }}</option>
+                        {% endfor %}
+                    {% endif %}
+                </select>
+            </div>
+
+            <div><label for="plugin_instance">Enter your rule code here:</label></div>
+            <textarea id="rule_code" name="rule_code" rows="5" cols="80" required></textarea>
+
+            <div><button id="execute">Submit</button></div>
+        </div>
+
+        <h2>Results</h2>
+
+        <div class="results-container">
+            <textarea id="results" rows="30" cols="80" readonly></textarea>
+        </div>
+    </body>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+
+    <script>
+        "use strict";
+
+        $(function() {
+            $('button#execute').on("click", function(e) {
+                //e.preventDefault();
+
+                const plugin_instance = $('textarea#plugin_instance').val();
+                const rule_code = $('textarea#rule_code').val();
+                const expected_data_type = 'text'; // This is how the formatting is maintained.
+                
+                $.get('/rule-execution', {plugin_instance: plugin_instance, rule_code: rule_code}, function(data) {
+                    $('#results').text(data);
+                }, expected_data_type);
+            });
+        });
+    </script>
+</html>

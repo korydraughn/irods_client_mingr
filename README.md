@@ -1,4 +1,4 @@
-# Minimal iRODS Web Application
+# MinGR - Minimalist GUI for iRODS
 
 An experimental web GUI for iRODS built on top of the iRODS HTTP API.
 
