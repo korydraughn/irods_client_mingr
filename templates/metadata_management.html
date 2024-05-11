@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Minimal iRODS Web Application</title>
+
+        <style>
+            .grid-container-modify-remove {
+                display: grid;
+                grid-template-columns: 100px 200px 200px 200px 100px;
+            }
+
+            .grid-container-modify-remove > div {
+                padding-bottom: 10px;
+            }
+
+            .grid-container-add {
+                display: grid;
+                grid-template-columns: 200px 200px 200px;
+            }
+
+            .grid-container-add > div {
+                padding-bottom: 10px;
+            }
+
+            #section-modify-remove-metadata {
+                padding-top: 5px;
+            }
+
+            #section-add-metadata {
+                padding-top: 30px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <h1>Minimal iRODS Web Application - Metadata Management</h1>
+
+        <div>
+            <h2>{{logical_path_label}}: {{logical_path}}</h2>
+
+            <div id="section-modify-remove-metadata">
+                <h3>Modify or Remove Metadata</h3>
+
+                {% if metadata %}
+                <div class="grid-container-modify-remove">
+                    <div>To Remove</div>
+                    <div>Attribute</div>
+                    <div>Value</div>
+                    <div>Units</div>
+                    <div>Action</div>
+                    {% for avu in metadata %}
+                    <div><input type="checkbox" /></div>
+                    <div>{{avu[0]}}</div>
+                    <div>{{avu[1]}}</div>
+                    <div>{{avu[2]}}</div>
+                    <div><button id="modify">Modify</button></div>
+                    {% endfor %}
+                </div>
+
+                <button id="remove">Remove</button>
+                <button id="clear_selected">Clear Selected</button>
+                {% else %}
+                <p>- No metadata found - </p>
+                {% endif %}
+            </div>
+
+            <div id="section-add-metadata">
+                <h3>Add Metadata</h3>
+
+                <form action="" method="post">
+                    <div class="grid-container-add">
+                        <div>Attribute</div>
+                        <div>Value</div>
+                        <div>Units</div>
+
+                        {% for i in range(5) %}
+                        <div><input name="attribute_{{i}}" type="text" /></div>
+                        <div><input name="value_{{i}}" type="text" /></div>
+                        <div><input name="unit_{{i}}" type="text" /></div>
+                        {% endfor %}
+                    </div>
+
+                    <button id="add">Add</button>
+                    <button id="clear">Clear Input</button>
+                </form>
+            </div>
+        </div>
+    </body>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+
+    <script>
+        "use strict";
+
+        $(function() {
+            /*
+            $("button#view_details").on("click", function() {
+                console.log('clicked view details button!');
+
+                // Find the data id associated with the table row and submit
+                // a request to fetch the details of the data object.
+                var id = $(this).data('irods-data-id');
+                console.log('view details id = ' + id);
+
+                var $form = $('form#for_data_object_info');
+                $form.find('input').val(id);
+                $form.trigger('submit');
+            });
+
+            $("button#delete").on("click", function() {
+                console.log('clicked delete button!');
+
+                // Find the data id associated with the table row and submit
+                // a request to fetch the details of the data object.
+                var id = $(this).data('irods-data-id');
+                console.log('delete id = ' + id);
+            });
+            */
+        });
+    </script>
+</html>

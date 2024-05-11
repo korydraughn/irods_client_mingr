@@ -181,3 +181,52 @@ def data_object_infoX():
         replicas=replicas,
         permissions=r_json['permissions']
     )
+
+@app.route('/metadata-management/<object_type>/<object_id>')
+def metadata_management(object_type, object_id):
+    app.logger.debug(f'object_type = [{object_type}], object_id = [{object_id}]')
+
+    if object_type == 'data-object':
+        is_data_object = True
+        logical_path_label = 'Data Object'
+        r = requests.get(IRODS_HTTP_API_URL + '/query', headers={'Authorization': f'Bearer {session["bearer_token"]}'}, params={
+            'op': 'execute_genquery',
+            'query': f"select COLL_NAME, DATA_NAME, META_DATA_ATTR_NAME, META_DATA_ATTR_VALUE, META_DATA_ATTR_UNITS where DATA_ID = '{object_id}'",
+            'count': 20
+        })
+    elif object_type == 'collection':
+        is_data_object = False
+        logical_path_label = 'Collection'
+        r = requests.get(IRODS_HTTP_API_URL + '/query', headers={'Authorization': f'Bearer {session["bearer_token"]}'}, params={
+            'op': 'execute_genquery',
+            'query': f"select COLL_NAME, META_COLL_ATTR_NAME, META_COLL_ATTR_VALUE, META_COLL_ATTR_UNITS where COLL_ID = '{object_id}'",
+            'count': 20
+        })
+    else:
+        abort(400)
+
+    if r.status_code != 200:
+        app.logger.error('Error retrieving metadata information.')
+        abort(500)
+
+    r_json = r.json()
+    if r_json['irods_response']['status_code'] < 0:
+        app.logger.error('Error retrieving metadata information.')
+        abort(500)
+
+    rows = r_json['rows']
+
+    if is_data_object and len(r_json) > 0:
+        logical_path = rows[0][0] + '/' + rows[0][1]
+        rows = [r[2:] for r in rows]
+    else:
+        logical_path = rows[0][0]
+        rows = [r[1:] for r in rows]
+
+    return render_template(
+        'metadata_management.html',
+        logical_path_label=logical_path_label,
+        logical_path=logical_path,
+        data_id=object_id,
+        metadata=rows
+    )
