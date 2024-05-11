@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, abort, session
 
+import json
 import requests
 import os
 
@@ -181,3 +182,30 @@ def data_object_infoX():
         replicas=replicas,
         permissions=r_json['permissions']
     )
+
+@app.get('/query/')
+def query():
+    return render_template('query.html')
+
+@app.route('/execute_query/', methods=['GET'])
+def execute_query():
+    query_string = request.args['query_string']
+    app.logger.debug(f'query_string = [{query_string}]')
+
+    r = requests.get(IRODS_HTTP_API_URL + '/query', headers={'Authorization': f'Bearer {session["bearer_token"]}'}, params={
+        'op': 'execute_genquery',
+        'query': query_string,
+        'count': 20
+    })
+
+    if r.status_code != 200:
+        app.logger.error('Error executing GenQuery1 string.')
+        abort(500)
+
+    r_json = r.json()
+    if r_json['irods_response']['status_code'] < 0:
+        app.logger.error('Error executing GenQuery1 string.')
+        abort(500)
+
+    app.logger.debug('results = ' + json.dumps(r_json['rows']))
+    return r_json['rows']
