@@ -3,41 +3,14 @@
     <head>
         <title>{{ title }} - MinGR</title>
 
-        <style>
-            .flex-container {
-                display: flex;
-            }
-
-            .flex-item > h2 {
-                margin-top: 0;
-            }
-
-            .flex-item:nth-child(1) {
-                padding-right: 2rem;
-            }
-
-            .flex-item nav ul {
-                margin-top: 0;
-            }
-        </style>
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
     </head>
 
     <body>
         <h1>Minimalist GUI for iRODS - {{ title }}</h1>
 
         <div class="flex-container">
-            <div class="flex-item">
-                <nav>
-                    <ul>
-                        <li><a href="{{ url_for('logout') }}">Log Out</a></li>
-                        <li><a href="{{ url_for('filesystem') }}">Filesystem Explorer</a></li>
-                        <li><a href="{{ url_for('query') }}">Query</a></li>
-                        <li><a href="{{ url_for('rule_execution') }}">Rule Execution</a></li>
-                        <li><a href="#">About</a></li>
-                        <li><a href="#">Contact</a></li>
-                    </ul>
-                </nav>
-            </div>
+            <div class="flex-item">{% include "nav.html" %}</div>
 
             <div class="flex-item">
                 <h2>Current Working Collection: {{ current_collection }}</h2>
@@ -69,7 +42,7 @@
                     <table>
                         <tr>
                             <th style="text-align: start; padding-right: 5em;">Name</th>
-                            <th style="text-align: start;">Size (in bytes)</th>
+                            <th style="text-align: start;">Size</th>
                             <th>Action</th>
                         </tr>
                         {% for id, _, dn, sz in data_objects %}

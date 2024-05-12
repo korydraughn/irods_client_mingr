@@ -3,6 +3,8 @@
     <head>
         <title>{{ title }} - MinGR</title>
 
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+
         <style>
             .results-container {
                 margin-top: 20px;
@@ -13,17 +15,23 @@
     <body>
         <h1>Minimalist GUI for iRODS - {{ title }}</h1>
 
-        <h2>Query Input</h2>
-        <div>
-            <div><label for="query_string">Enter Your Query:</label></div>
-            <textarea id="query_string" name="query_string" rows="5" cols="80" required>select COLL_NAME, DATA_NAME</textarea>
-            <div><button id="execute">Submit</button></div>
-        </div>
+        <div class="flex-container">
+            <div class="flex-item">{% include "nav.html" %}</div>
 
-        <h2>Query Results</h2>
-        <div class="results-container">
-            <div>Previous Query String: <span id="previous_query_string"></span></div>
-            <textarea id="results" rows="30" cols="80" readonly></textarea>
+            <div class="flex-item">
+                <h2>Query Input</h2>
+                <div>
+                    <div><label for="query_string">Enter Your Query:</label></div>
+                    <textarea id="query_string" name="query_string" rows="5" cols="80" required>select COLL_NAME, DATA_NAME</textarea>
+                    <div><button id="execute">Submit</button></div>
+                </div>
+
+                <h2>Query Results</h2>
+                <div class="results-container">
+                    <div>Previous Query String: <span id="previous_query_string"></span></div>
+                    <textarea id="results" rows="30" cols="80" readonly></textarea>
+                </div>
+            </div>
         </div>
     </body>
 

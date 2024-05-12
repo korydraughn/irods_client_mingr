@@ -3,6 +3,8 @@
     <head>
         <title>{{ title }} - MinGR</title>
 
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+
         <style>
             .grid-container {
                 display: grid;
@@ -19,63 +21,69 @@
     <body>
         <h1>Minimalist GUI for iRODS - {{ title }}</h1>
 
-        <h2>Data Object: {{ logical_path }}</h2>
-        <h2>Data ID: {{ data_id }}</h2>
+        <div class="flex-container">
+            <div class="flex-item">{% include "nav.html" %}</div>
 
-        <p>
-            <form action="" method="post">
-                <input name="data_id" type="text" value="{{ data_id }}" hidden required />
-                <button>Delete Data Object</button>
-            </form>
-        </p>
+            <div class="flex-item">
+                <h2>Data Object: {{ logical_path }}</h2>
+                <h2>Data ID: {{ data_id }}</h2>
 
-        <h3>Replica Information</h3>
+                <p>
+                    <form action="" method="post">
+                        <input name="data_id" type="text" value="{{ data_id }}" hidden required />
+                        <button>Delete Data Object</button>
+                    </form>
+                </p>
 
-        {% for d in replicas %}
-        <div class="grid-container">
-            <div>Replica Number:</div>
-            <div>{{ d[2] }}</div>
+                <h3>Replica Information</h3>
 
-            <div>Status:</div>
-            <div>{{ d[3] }}</div>
+                {% for d in replicas %}
+                <div class="grid-container">
+                    <div>Replica Number:</div>
+                    <div>{{ d[2] }}</div>
 
-            <div>Size (in bytes):</div>
-            <div>{{ d[4] }} </div>
+                    <div>Status:</div>
+                    <div>{{ d[3] }}</div>
 
-            <div>Physical Path:</div>
-            <div>{{ d[5] }}</div>
+                    <div>Size:</div>
+                    <div>{{ d[4] }} </div>
 
-            <div>Checksum:</div>
-            <div>{{ d[6] }}</div>
+                    <div>Physical Path:</div>
+                    <div>{{ d[5] }}</div>
 
-            <div>Resource Name:</div>
-            <div>{{ d[7] }}</div>
+                    <div>Checksum:</div>
+                    <div>{{ d[6] }}</div>
 
-            <div>Created At:</div>
-            <div>{{ d[8] }}</div>
+                    <div>Resource Name:</div>
+                    <div>{{ d[7] }}</div>
 
-            <div>Modified At:</div>
-            <div>{{ d[9] }}</div>
-        </div>
-        {% endfor %}
+                    <div>Created At:</div>
+                    <div>{{ d[8] }}</div>
 
-        <h3>Permissions</h3>
+                    <div>Modified At:</div>
+                    <div>{{ d[9] }}</div>
+                </div>
+                {% endfor %}
 
-        {% if permissions %}
-            {% for p in permissions %}
-            <div class="grid-container">
-                <div>Username:</div>
-                <div>{{ p['name'] }}#{{ p['zone'] }}</div>
+                <h3>Permissions</h3>
 
-                <div>User Type:</div>
-                <div>{{ p['type'] }}</div>
+                {% if permissions %}
+                    {% for p in permissions %}
+                    <div class="grid-container">
+                        <div>Username:</div>
+                        <div>{{ p['name'] }}#{{ p['zone'] }}</div>
 
-                <div>Permission:</div>
-                <div>{{ p['perm'] }}</div>
+                        <div>User Type:</div>
+                        <div>{{ p['type'] }}</div>
+
+                        <div>Permission:</div>
+                        <div>{{ p['perm'] }}</div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <p>- No permissions found -</p>
+                {% endif %}
             </div>
-            {% endfor %}
-        {% else %}
-        <p>- No permissions found -</p>
-        {% endif %}
+        </div>
     </body>
 </html>

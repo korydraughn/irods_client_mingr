@@ -1,0 +1,12 @@
+<nav>
+    <div class="nav-username">Username: {{ session['fq_username'] }}</div>
+
+    <ul>
+        <li><a href="{{ url_for('logout') }}">Log Out</a></li>
+        <li><a href="{{ url_for('filesystem') }}">Filesystem Explorer</a></li>
+        <li><a href="{{ url_for('query') }}">Query</a></li>
+        <li><a href="{{ url_for('rule_execution') }}">Rule Execution</a></li>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Contact</a></li>
+    </ul>
+</nav>

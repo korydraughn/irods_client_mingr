@@ -1,5 +1,6 @@
-from flask import Flask, render_template, request, abort, session, redirect, url_for
+from flask import Flask, render_template, request, abort, session, redirect, url_for, g
 
+import datetime
 import json
 import requests
 import os
@@ -43,6 +44,7 @@ def login():
         # Start a new session for the user and redirect them to the filesystem page.
         session.clear()
         session['username'] = username
+        session['fq_username'] = f'{username}#{IRODS_ZONE_NAME}'
         session['bearer_token'] = r.text
         return redirect(url_for('filesystem', collection=f'/{IRODS_ZONE_NAME}/home/{username}'))
 
@@ -132,6 +134,12 @@ def data_object_info():
     replicas = r_json['rows']
     logical_path = replicas[0][0] + '/' + replicas[0][1]
     app.logger.debug(f'logical_path = [{logical_path}]')
+
+    # Update the timestamps to be in ISO8601 format.
+    # The conversion to an integer ignores leading zeros. 
+    for r in replicas:
+        r[8] = datetime.datetime.utcfromtimestamp(int(r[8]))
+        r[9] = datetime.datetime.utcfromtimestamp(int(r[9]))
 
     r = requests.get(IRODS_HTTP_API_URL + '/data-objects', headers={'Authorization': f'Bearer {session["bearer_token"]}'}, params={
         'op': 'stat',
