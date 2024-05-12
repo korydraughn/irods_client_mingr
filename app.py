@@ -135,11 +135,15 @@ def data_object_info():
     logical_path = replicas[0][0] + '/' + replicas[0][1]
     app.logger.debug(f'logical_path = [{logical_path}]')
 
-    # Update the timestamps to be in ISO8601 format.
-    # The conversion to an integer ignores leading zeros. 
     for r in replicas:
+        # Update the timestamps to be in ISO8601 format. The conversion to an
+        # integer ignores leading zeros. 
         r[8] = datetime.datetime.utcfromtimestamp(int(r[8]))
         r[9] = datetime.datetime.utcfromtimestamp(int(r[9]))
+
+        # Convert replica status integer to its symbolic name for readability.
+        sym_name_idx = int(r[3])
+        r[3] = ['stale', 'good', 'intermediate', 'read-locked', 'write-locked'][sym_name_idx]
 
     r = requests.get(IRODS_HTTP_API_URL + '/data-objects', headers={'Authorization': f'Bearer {session["bearer_token"]}'}, params={
         'op': 'stat',
