@@ -7,58 +7,37 @@
             grid-template-columns: auto auto;
             padding-bottom: 20px;
         }
-
-        .grid-container-replicas > div {
-            padding-bottom: 10px;
-        }
     </style>
 {% endblock %}
 
 {% block content %}
-    <h2>Data Object: {{ logical_path }}</h2>
-    <h2>Data ID: {{ data_id }}</h2>
+    <h2>Collection: {{ logical_path }}</h2>
+    <h2>Collection ID: {{ coll_id }}</h2>
 
     <p>
         <form action="" method="post">
-            <input name="data_id" type="text" value="{{ data_id }}" hidden required />
-            <button>Delete Data Object</button>
+            <input name="coll_id" type="text" value="{{ coll_id }}" hidden required />
+            <button>Delete Collection</button>
         </form>
     </p>
 
-    <h3>Replica Information</h3>
+    <h3>Collection Information</h3>
 
-    {% for d in replicas %}
     <div class="grid-container">
-        <div>Replica Number:</div>
-        <div>{{ d[2] }}</div>
-
-        <div>Status:</div>
-        <div>{{ d[3] }}</div>
-
-        <div>Size:</div>
-        <div>{{ d[4] }} </div>
-
-        <div>Physical Path:</div>
-        <div>{{ d[5] }}</div>
-
-        <div>Checksum:</div>
-        <div>{{ d[6] }}</div>
-
-        <div>Resource Name:</div>
-        <div>{{ d[7] }}</div>
+        <div>Inheritance Enabled:</div>
+        <div>{{ coll_info['inheritance_enabled'] }}</div>
 
         <div>Created At:</div>
-        <div>{{ d[8] }}</div>
+        <div>{{ coll_info['created_at'] }}</div>
 
         <div>Modified At:</div>
-        <div>{{ d[9] }}</div>
+        <div>{{ coll_info['modified_at'] }}</div>
     </div>
-    {% endfor %}
 
     <h3>Permissions</h3>
 
-    {% if permissions %}
-        {% for p in permissions %}
+    {% if coll_info['permissions'] %}
+        {% for p in coll_info['permissions'] %}
         <div class="grid-container">
             <div>Username:</div>
             <div>{{ p['name'] }}#{{ p['zone'] }}</div>

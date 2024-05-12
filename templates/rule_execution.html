@@ -1,48 +1,34 @@
-<!doctype html>
-<html>
-    <head>
-        <title>{{ title }} - MinGR</title>
+{% extends "base_session.html" %}
 
-        <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
-    </head>
-
-    <body>
-        <h1>Minimalist GUI for iRODS - {{ title }}</h1>
-
-        <div class="flex-container">
-            <div class="flex-item">{% include "nav.html" %}</div>
-
-            <div class="flex-item">
-                <h2>Rule Code Input</h2>
-                <div>
-                    <div><label for="plugin_instance">Choose a rule engine plugin to execute code against:</label></div>
-                    <div>
-                        <select id="plugin_instance" name="rep_instance" required>
-                            <option value="">-- All plugins --</option>
-                            {% if plugin_instances %}
-                                {% for p in plugin_instances %}
-                            <option value="{{ p }}">{{ p }}</option>
-                                {% endfor %}
-                            {% endif %}
-                        </select>
-                    </div>
-
-                    <div><label for="plugin_instance">Enter your rule code here:</label></div>
-                    <textarea id="rule_code" name="rule_code" rows="5" cols="80" required></textarea>
-
-                    <div><button id="execute">Submit</button></div>
-                </div>
-
-                <h2>Results</h2>
-                <div class="results-container">
-                    <textarea id="results" rows="30" cols="80" readonly></textarea>
-                </div>
-            </div>
+{% block content %}
+    <h2>Rule Code Input</h2>
+    <div>
+        <div><label for="plugin_instance">Choose a rule engine plugin to execute code against:</label></div>
+        <div>
+            <select id="plugin_instance" name="rep_instance" required>
+                <option value="">-- All plugins --</option>
+                {% if plugin_instances %}
+                    {% for p in plugin_instances %}
+                <option value="{{ p }}">{{ p }}</option>
+                    {% endfor %}
+                {% endif %}
+            </select>
         </div>
-    </body>
 
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+        <div><label for="plugin_instance">Enter your rule code here:</label></div>
+        <textarea id="rule_code" name="rule_code" rows="5" cols="80" required></textarea>
+
+        <div><button id="execute">Submit</button></div>
+    </div>
+
+    <h2>Results</h2>
+    <div class="results-container">
+        <textarea id="results" rows="15" cols="80" readonly></textarea>
+    </div>
+{% endblock %}
+
+{% block js_script %}
+    {{ super() }}
 
     <script>
         "use strict";
@@ -61,4 +47,4 @@
             });
         });
     </script>
-</html>
+{% endblock %}

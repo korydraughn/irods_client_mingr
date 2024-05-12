@@ -1,42 +1,30 @@
-<!doctype html>
-<html>
-    <head>
-        <title>{{ title }} - MinGR</title>
+{% extends "base_session.html" %}
 
-        <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+{% block css_styles %}
+    <style>
+        .results-container {
+            margin-top: 20px;
+        }
+    </style>
+{% endblock %}
 
-        <style>
-            .results-container {
-                margin-top: 20px;
-            }
-        </style>
-    </head>
+{% block content %}
+    <h2>Query Input</h2>
+    <div>
+        <div><label for="query_string">Enter Your Query:</label></div>
+        <textarea id="query_string" name="query_string" rows="5" cols="80" required>select COLL_NAME, DATA_NAME</textarea>
+        <div><button id="execute">Submit</button></div>
+    </div>
 
-    <body>
-        <h1>Minimalist GUI for iRODS - {{ title }}</h1>
+    <h2>Query Results</h2>
+    <div class="results-container">
+        <div>Previous Query String: <span id="previous_query_string"></span></div>
+        <textarea id="results" rows="30" cols="80" readonly></textarea>
+    </div>
+{% endblock %}
 
-        <div class="flex-container">
-            <div class="flex-item">{% include "nav.html" %}</div>
-
-            <div class="flex-item">
-                <h2>Query Input</h2>
-                <div>
-                    <div><label for="query_string">Enter Your Query:</label></div>
-                    <textarea id="query_string" name="query_string" rows="5" cols="80" required>select COLL_NAME, DATA_NAME</textarea>
-                    <div><button id="execute">Submit</button></div>
-                </div>
-
-                <h2>Query Results</h2>
-                <div class="results-container">
-                    <div>Previous Query String: <span id="previous_query_string"></span></div>
-                    <textarea id="results" rows="30" cols="80" readonly></textarea>
-                </div>
-            </div>
-        </div>
-    </body>
-
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+{% block js_script %}
+    {{ super() }}
 
     <script>
         "use strict";
@@ -55,4 +43,4 @@
             });
         });
     </script>
-</html>
+{% endblock %}

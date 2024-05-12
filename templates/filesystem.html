@@ -1,80 +1,107 @@
-<!doctype html>
-<html>
-    <head>
-        <title>{{ title }} - MinGR</title>
+{% extends "base_session.html" %}
 
-        <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
-    </head>
+{% block content %}
+    <h2>Current Working Collection: {{ current_collection }}</h2>
 
-    <body>
-        <h1>Minimalist GUI for iRODS - {{ title }}</h1>
+    <form action="{{ url_for('filesystem') }}" method="get">
+        <label>Change Collection To: </label>
+        <input name="collection" type="text" value="{{ current_collection }}" required />
+        <button>Go</button>
+    </form>
 
-        <div class="flex-container">
-            <div class="flex-item">{% include "nav.html" %}</div>
+    <div>
+        <h3>Collections</h3>
 
-            <div class="flex-item">
-                <h2>Current Working Collection: {{ current_collection }}</h2>
+        {% if collections %}
+        <table>
+            <thead>
+                <tr>
+                    <th style="text-align: start;">Name</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
 
-                <form action="{{ url_for('filesystem') }}" method="get">
-                    <label>Change Collection To: </label>
-                    <input name="collection" type="text" value="{{ current_collection }}" required />
-                    <button>Go</button>
-                </form>
+            <tbody id="collections">
+                {% for id, cn in collections %}
+                <tr>
+                    <td>{{ cn }}</td>
+                    <td><button id="view_details" data-irods-coll-id="{{ id }}">View</button></td>
+                    <td><button id="delete" data-irods-coll-id="{{ id }}">Delete</button></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
 
-                <div>
-                    <h3>Collections</h3>
+        <form id="for_collection_info" action="/collection-info" method="get" hidden>
+            <input name="coll_id" type="text" required />
+            <button></button>
+        </form>
+        {% else %}
+        <p>- No collections found - </p>
+        {% endif %}
+    </div>
 
-                    {% if collections %}
-                    <ul>
-                        {% for id, c in collections %}
-                        <li>{{ c }}</li>
-                        {% endfor %}
-                    </ul>
-                    {% else %}
-                    <p>- No collections found - </p>
-                    {% endif %}
-                </div>
+    <div>
+        <h3>Data Objects</h3>
 
-                <div>
-                    <h3>Data Objects</h3>
+        {% if data_objects %}
+        <table>
+            <thead>
+                <tr>
+                    <th style="text-align: start;">Name</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
 
-                    {% if data_objects %}
-                    <table>
-                        <tr>
-                            <th style="text-align: start; padding-right: 5em;">Name</th>
-                            <th style="text-align: start;">Size</th>
-                            <th>Action</th>
-                        </tr>
-                        {% for id, _, dn, sz in data_objects %}
-                        <tr>
-                            <td>{{ dn }}</td>
-                            <td style="text-align: end;">{{ sz }}</td>
-                            <td><button id="view_details" data-irods-data-id="{{ id }}">View</button></td>
-                            <td><button id="delete" data-irods-data-id="{{ id }}">Delete</button></td>
-                        </tr>
-                        {% endfor %}
-                    </table>
+            <tbody id="data_objects">
+                {% for id, _, dn in data_objects %}
+                <tr>
+                    <td>{{ dn }}</td>
+                    <td><button id="view_details" data-irods-data-id="{{ id }}">View</button></td>
+                    <td><button id="delete" data-irods-data-id="{{ id }}">Delete</button></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
 
-                    <form id="for_data_object_info" action="/data-object-info" method="get" hidden>
-                        <input name="data_id" type="text" required />
-                        <button></button>
-                    </form>
-                    {% else %}
-                    <p>- No data objects found - </p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </body>
+        <form id="for_data_object_info" action="/data-object-info" method="get" hidden>
+            <input name="data_id" type="text" required />
+            <button></button>
+        </form>
+        {% else %}
+        <p>- No data objects found - </p>
+        {% endif %}
+    </div>
+{% endblock %}
 
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+{% block js_script %}
+    {{ super() }}
 
     <script>
         "use strict";
 
         $(function() {
-            $("button#view_details").on("click", function() {
+            $("#collections button#view_details").on("click", function() {
+                // Find the collection id associated with the table row and submit
+                // a request to fetch the details of the collection.
+                var id = $(this).data('irods-coll-id');
+                console.log('view details id = ' + id);
+
+                var $form = $('form#for_collection_info');
+                $form.find('input').val(id);
+                $form.trigger('submit');
+            });
+
+            $("#collections button#delete").on("click", function() {
+                console.log('clicked delete button!');
+
+                // Find the collection id associated with the table row and submit
+                // a request to fetch the details of the collection.
+                var id = $(this).data('irods-coll-id');
+                console.log('delete id = ' + id);
+            });
+
+            $("#data_objects button#view_details").on("click", function() {
                 console.log('clicked view details button!');
 
                 // Find the data id associated with the table row and submit
@@ -87,7 +114,7 @@
                 $form.trigger('submit');
             });
 
-            $("button#delete").on("click", function() {
+            $("#data_objects button#delete").on("click", function() {
                 console.log('clicked delete button!');
 
                 // Find the data id associated with the table row and submit
@@ -97,4 +124,4 @@
             });
         });
     </script>
-</html>
+{% endblock %}

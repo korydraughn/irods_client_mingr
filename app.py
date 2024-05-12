@@ -89,7 +89,7 @@ def filesystem():
     # Get list of data objects under the collection.
     r = requests.get(IRODS_HTTP_API_URL + '/query', headers={'Authorization': f'Bearer {session["bearer_token"]}'}, params={
         'op': 'execute_genquery',
-        'query': f"select DATA_ID, COLL_NAME, DATA_NAME, DATA_SIZE where COLL_NAME = '{coll_path}'",
+        'query': f"select DATA_ID, COLL_NAME, DATA_NAME where COLL_NAME = '{coll_path}'",
         'count': 20
     })
 
@@ -164,6 +164,61 @@ def data_object_info():
         permissions=r_json['permissions']
     )
 
+@app.route('/collection-info')
+def collection_info():
+    coll_id = request.args['coll_id']
+    app.logger.debug(f'coll_id = [{coll_id}]')
+
+    r = requests.get(IRODS_HTTP_API_URL + '/query', headers={'Authorization': f'Bearer {session["bearer_token"]}'}, params={
+        'op': 'execute_genquery',
+        'query': f"select COLL_NAME, COLL_CREATE_TIME where COLL_ID = '{coll_id}'"
+    })
+
+    if r.status_code != 200:
+        app.logger.error('Error retrieving collection information.')
+        abort(500)
+
+    r_json = r.json()
+    if r_json['irods_response']['status_code'] < 0:
+        app.logger.error('Error retrieving collection information.')
+        abort(500)
+
+    logical_path = r_json['rows'][0][0]
+
+    # Update the timestamps to be in ISO8601 format.
+    # The conversion to an integer ignores leading zeros. 
+    ctime = datetime.datetime.utcfromtimestamp(int(r_json['rows'][0][1]))
+
+    app.logger.debug(f'logical_path = [{logical_path}]')
+    app.logger.debug(f'ctime = [{ctime}]')
+
+    r = requests.get(IRODS_HTTP_API_URL + '/collections', headers={'Authorization': f'Bearer {session["bearer_token"]}'}, params={
+        'op': 'stat',
+        'lpath': logical_path
+    })
+
+    if r.status_code != 200:
+        app.logger.error('Error retrieving permissions for data object.')
+        abort(500)
+
+    r_json = r.json()
+    if r_json['irods_response']['status_code'] < 0:
+        app.logger.error(r_json['irods_response']['status_message'])
+        abort(500)
+
+    r_json.pop('irods_response')
+    r_json['inheritance_enabled'] = 1 if r_json['inheritance_enabled'] == True else 0
+    r_json['created_at'] = ctime
+    r_json['modified_at'] = datetime.datetime.utcfromtimestamp(r_json['modified_at'])
+
+    return render_template(
+        'collection_info.html',
+        title='Collection Information',
+        logical_path=logical_path,
+        coll_id=coll_id,
+        coll_info=r_json
+    )
+
 @app.get('/query')
 def query():
     query_string = request.args.get('query_string')
@@ -234,3 +289,11 @@ def rule_execution():
 
     r_json.pop('irods_response')
     return r_json
+
+@app.get('/about')
+def about():
+    return render_template('about.html', title='About')
+
+@app.get('/contact')
+def contact():
+    return render_template('contact.html', title='Contact')

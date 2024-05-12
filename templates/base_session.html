@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+    <head>
+        <title>{{ title }} - MinGR</title>
+
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+
+        {% block css_styles %}{% endblock %}
+    </head>
+
+    <body>
+        <h1>Minimalist GUI for iRODS - {{ title }}</h1>
+
+        <div class="flex-container">
+            <div class="flex-item">
+                <nav>
+                    {% if session and 'fq_username' in session %}
+                    <div class="nav-username">Username: {{ session['fq_username'] }}</div>
+                    {% endif %}
+
+                    <ul>
+                        <li><a href="{{ url_for('logout') }}">Log Out</a></li>
+                        <li><a href="{{ url_for('filesystem') }}">Filesystem Explorer</a></li>
+                        <li><a href="{{ url_for('query') }}">Query</a></li>
+                        <li><a href="{{ url_for('rule_execution') }}">Rule Execution</a></li>
+                        <li><a href="{{ url_for('about') }}">About</a></li>
+                        <li><a href="{{ url_for('contact') }}">Contact</a></li>
+                    </ul>
+                </nav>
+            </div>
+
+            <div class="flex-item">{% block content %}{% endblock %}</div>
+        </div>
+    </body>
+
+    {% block js_script %}
+    <!-- jQuery -->
+    <script
+        src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+        crossorigin="anonymous"></script>
+    {% endblock %}
+</html>
