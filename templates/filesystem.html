@@ -25,6 +25,7 @@
                 {% for id, cn in collections %}
                 <tr>
                     <td>{{ cn }}</td>
+                    <td><button id="go_to" data-irods-coll-id="{{ id }}">Go To</button></td>
                     <td><button id="view_details" data-irods-coll-id="{{ id }}">View</button></td>
                     <td><button id="delete" data-irods-coll-id="{{ id }}">Delete</button></td>
                 </tr>

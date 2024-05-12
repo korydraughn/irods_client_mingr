@@ -211,7 +211,7 @@ def collection_info():
         abort(500)
 
     r_json.pop('irods_response')
-    r_json['inheritance_enabled'] = 1 if r_json['inheritance_enabled'] == True else 0
+    r_json['inheritance_enabled'] = 'yes' if r_json['inheritance_enabled'] == True else 'no'
     r_json['created_at'] = ctime
     r_json['modified_at'] = datetime.datetime.utcfromtimestamp(r_json['modified_at'])
 
