@@ -10,7 +10,39 @@
     </form>
 
     <div>
-        <h3>Collections</h3>
+        <h3>Data Objects ({{ total_data_objects }})</h3>
+
+        {% if data_objects %}
+        <table>
+            <thead>
+                <tr>
+                    <th style="text-align: start;">Name</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody id="data_objects">
+                {% for id, _, dn in data_objects %}
+                <tr>
+                    <td>{{ dn }}</td>
+                    <td><button id="view_details" data-irods-data-id="{{ id }}">View</button></td>
+                    <td><button id="delete" data-irods-data-id="{{ id }}">Delete</button></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <form id="for_data_object_info" action="/data-object-info" method="get" hidden>
+            <input name="data_id" type="text" required />
+            <button></button>
+        </form>
+        {% else %}
+        <p>- No data objects found - </p>
+        {% endif %}
+    </div>
+
+    <div>
+        <h3>Collections ({{ total_collections }})</h3>
 
         {% if collections %}
         <table>
@@ -39,38 +71,6 @@
         </form>
         {% else %}
         <p>- No collections found - </p>
-        {% endif %}
-    </div>
-
-    <div>
-        <h3>Data Objects</h3>
-
-        {% if data_objects %}
-        <table>
-            <thead>
-                <tr>
-                    <th style="text-align: start;">Name</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-
-            <tbody id="data_objects">
-                {% for id, _, dn in data_objects %}
-                <tr>
-                    <td>{{ dn }}</td>
-                    <td><button id="view_details" data-irods-data-id="{{ id }}">View</button></td>
-                    <td><button id="delete" data-irods-data-id="{{ id }}">Delete</button></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        <form id="for_data_object_info" action="/data-object-info" method="get" hidden>
-            <input name="data_id" type="text" required />
-            <button></button>
-        </form>
-        {% else %}
-        <p>- No data objects found - </p>
         {% endif %}
     </div>
 {% endblock %}

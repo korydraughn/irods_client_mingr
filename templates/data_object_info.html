@@ -5,11 +5,10 @@
         .grid-container {
             display: grid;
             grid-template-columns: auto auto;
-            padding-bottom: 20px;
         }
 
-        .grid-container-replicas > div {
-            padding-bottom: 10px;
+        .permission-container {
+            margin-bottom: 15px;
         }
     </style>
 {% endblock %}
@@ -59,7 +58,7 @@
 
     {% if permissions %}
         {% for p in permissions %}
-        <div class="grid-container">
+        <div class="grid-container permission-container">
             <div>Username:</div>
             <div>{{ p['name'] }}#{{ p['zone'] }}</div>
 

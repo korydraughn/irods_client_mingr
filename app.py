@@ -68,6 +68,23 @@ def filesystem():
     else:
         coll_path = os.path.normpath(collection)
 
+    # Get total number of collections under the collection.
+    r = requests.get(IRODS_HTTP_API_URL + '/query', headers={'Authorization': f'Bearer {session["bearer_token"]}'}, params={
+        'op': 'execute_genquery',
+        'query': f"select count(COLL_ID) where COLL_PARENT_NAME = '{coll_path}'"
+    })
+
+    if r.status_code != 200:
+        app.logger.error('Error retrieving collection listing for user.')
+        abort(500)
+
+    r_json = r.json()
+    if r_json['irods_response']['status_code'] < 0:
+        app.logger.error('Error retrieving collection listing for user.')
+        abort(500)
+
+    total_collections = r_json['rows'][0][0]
+
     # Get list of collections under the collection.
     r = requests.get(IRODS_HTTP_API_URL + '/query', headers={'Authorization': f'Bearer {session["bearer_token"]}'}, params={
         'op': 'execute_genquery',
@@ -85,6 +102,23 @@ def filesystem():
         abort(500)
 
     collections = r_json['rows']
+
+    # Get total number of data objects under the collection.
+    r = requests.get(IRODS_HTTP_API_URL + '/query', headers={'Authorization': f'Bearer {session["bearer_token"]}'}, params={
+        'op': 'execute_genquery',
+        'query': f"select count(DATA_ID) where COLL_NAME = '{coll_path}'",
+    })
+
+    if r.status_code != 200:
+        app.logger.error('Error retrieving data object listing for user.')
+        abort(500)
+
+    r_json = r.json()
+    if r_json['irods_response']['status_code'] < 0:
+        app.logger.error('Error retrieving data object listing for user.')
+        abort(500)
+
+    total_data_objects = r_json['rows'][0][0]
 
     # Get list of data objects under the collection.
     r = requests.get(IRODS_HTTP_API_URL + '/query', headers={'Authorization': f'Bearer {session["bearer_token"]}'}, params={
@@ -106,8 +140,10 @@ def filesystem():
         'filesystem.html',
         title='Filesystem',
         current_collection=coll_path,
+        total_data_objects=total_data_objects,
+        data_objects=r_json['rows'],
+        total_collections=total_collections,
         collections=collections,
-        data_objects=r_json['rows']
     )
 
 @app.route('/data-object-info')
