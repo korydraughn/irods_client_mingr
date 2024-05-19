@@ -181,6 +181,24 @@ def data_object_info():
         sym_name_idx = int(r[3])
         r[3] = ['stale', 'good', 'intermediate', 'read-locked', 'write-locked'][sym_name_idx]
 
+    r = requests.get(IRODS_HTTP_API_URL + '/query', headers={'Authorization': f'Bearer {session["bearer_token"]}'}, params={
+        'op': 'execute_genquery',
+        'query': 'select META_DATA_ATTR_NAME, META_DATA_ATTR_VALUE, META_DATA_ATTR_UNITS '
+                 f"where COLL_NAME = '{replicas[0][0]}' and DATA_NAME ='{replicas[0][1]}'",
+        'count': 250
+    })
+
+    if r.status_code != 200:
+        app.logger.error('Error retrieving metadata for data object.')
+        abort(500)
+
+    r_json = r.json()
+    if r_json['irods_response']['status_code'] < 0:
+        app.logger.error(r_json['irods_response']['status_message'])
+        abort(500)
+
+    metadata = r_json['rows']
+
     r = requests.get(IRODS_HTTP_API_URL + '/data-objects', headers={'Authorization': f'Bearer {session["bearer_token"]}'}, params={
         'op': 'stat',
         'lpath': logical_path
@@ -201,6 +219,7 @@ def data_object_info():
         logical_path=logical_path,
         data_id=data_id,
         replicas=replicas,
+        metadata=metadata,
         permissions=r_json['permissions']
     )
 
@@ -329,6 +348,126 @@ def rule_execution():
 
     r_json.pop('irods_response')
     return r_json
+
+@app.route('/add-metadata', methods=["POST"])
+def add_metadata():
+    if 'username' not in session:
+        abort(401)
+
+    if request.form.get('entity_type', None) != 'data_object':
+        app.logger.error('only data objects are supported.')
+        abort(400)
+
+    r = requests.post(IRODS_HTTP_API_URL + '/data-objects', headers={'Authorization': f'Bearer {session["bearer_token"]}'}, data={
+        'op': 'modify_metadata',
+        'lpath': request.form.get('lpath', None),
+        'operations': json.dumps([{
+            'operation': 'add',
+            'attribute': request.form.get('attribute', None),
+            'value': request.form.get('value', None),
+            'units': request.form.get('units', None)
+        }])
+    })
+
+    if r.status_code != 200:
+        app.logger.error('Error adding metadata to data object.')
+        abort(500)
+
+    r_json = r.json()
+    if r_json['irods_response']['status_code'] < 0:
+        app.logger.error('Error adding metadata to data object.')
+        abort(500)
+
+    return redirect(url_for('data_object_info', data_id=request.form.get('data_id')))
+
+@app.route('/remove-metadata', methods=["POST"])
+def remove_metadata():
+    if 'username' not in session:
+        abort(401)
+
+    if request.form.get('entity_type', None) != 'data_object':
+        app.logger.error('only data objects are supported.')
+        abort(400)
+
+    r = requests.post(IRODS_HTTP_API_URL + '/data-objects', headers={'Authorization': f'Bearer {session["bearer_token"]}'}, data={
+        'op': 'modify_metadata',
+        'lpath': request.form.get('lpath', None),
+        'operations': json.dumps([{
+            'operation': 'remove',
+            'attribute': request.form.get('attribute', None),
+            'value': request.form.get('value', None),
+            'units': request.form.get('units', None)
+        }])
+    })
+
+    if r.status_code != 200:
+        app.logger.error('Error removing metadata from data object.')
+        abort(500)
+
+    r_json = r.json()
+    if r_json['irods_response']['status_code'] < 0:
+        app.logger.error('Error removing metadata from data object.')
+        abort(500)
+
+    return redirect(url_for('data_object_info', data_id=request.form.get('data_id')))
+
+@app.route('/add-permission', methods=["POST"])
+def add_permission():
+    if 'username' not in session:
+        abort(401)
+
+    app.logger.debug(f'data_id     = [{request.form.get("data_id", None)}]')
+    app.logger.debug(f'lpath       = [{request.form.get("lpath", None)}]')
+    app.logger.debug(f'entity_name = [{request.form.get("entity_name", None)}]')
+    app.logger.debug(f'permission  = [{request.form.get("permission", None)}]')
+
+    r = requests.post(IRODS_HTTP_API_URL + '/data-objects', headers={'Authorization': f'Bearer {session["bearer_token"]}'}, data={
+        'op': 'modify_permissions',
+        'lpath': request.form.get('lpath', None),
+        'operations': json.dumps([{
+            'entity_name': request.form.get('entity_name', None),
+            'acl': request.form.get('permission', None)
+        }])
+    })
+
+    if r.status_code != 200:
+        app.logger.error('(http) Error adding permission to data object.')
+        abort(500)
+
+    r_json = r.json()
+    if r_json['irods_response']['status_code'] < 0:
+        app.logger.error('(irods) Error adding permission to data object.')
+        abort(500)
+
+    return redirect(url_for('data_object_info', data_id=request.form.get('data_id')))
+
+@app.route('/remove-permission', methods=["POST"])
+def remove_permission():
+    if 'username' not in session:
+        abort(401)
+
+    app.logger.debug(f'lpath       = [{request.form.get("lpath", None)}]')
+    app.logger.debug(f'entity_name = [{request.form.get("entity_name", None)}]')
+
+    r = requests.post(IRODS_HTTP_API_URL + '/data-objects', headers={'Authorization': f'Bearer {session["bearer_token"]}'}, data={
+        'op': 'modify_permissions',
+        'lpath': request.form.get('lpath', None),
+        'operations': json.dumps([{
+            'entity_name': request.form.get('entity_name', None),
+            'acl': 'null'
+        }])
+    })
+
+    if r.status_code != 200:
+        app.logger.error('(http) Error removing permission from data object.')
+        abort(500)
+
+    r_json = r.json()
+    if r_json['irods_response']['status_code'] < 0:
+        app.logger.error('(irods) Error removing permission from data object.')
+        abort(500)
+
+    return redirect(url_for('data_object_info', data_id=request.form.get('data_id')))
 
 @app.get('/about')
 def about():
