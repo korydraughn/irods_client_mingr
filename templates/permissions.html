@@ -1,0 +1,60 @@
+<div class="permissions-manager-container">
+    <h3>Permissions</h3>
+
+    <div class="add-permission-container">
+        <form action="{{ url_for('add_permission') }}" method="post">
+            <input type="text" name="object_type" value="{{ object_type }}" hidden />
+            <input type="text" name="object_id" value="{{ object_id }}" hidden />
+            <input type="text" name="lpath" value="{{ logical_path }}" hidden />
+
+            <div><input type="text" name="entity_name" placeholder="Unqualified Username" /></div>
+
+            <div>
+                <select name="permission">
+                    <option value="read">read</option>
+                    <option value="write">write</option>
+                    <option value="own">own</option>
+                </select>
+            </div>
+
+            <button>Add Permission</button>
+        </form>
+    </div>
+
+    <details>
+        <summary>View / Remove Permissions</summary>
+
+        {% if permissions %}
+        <table class="permissions-table">
+            <thead>
+                <tr>
+                    <th>Entity Name</th>
+                    <th>Entity Type</th>
+                    <th>Permission</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for p in permissions %}
+                <form action="{{ url_for('remove_permission') }}" method="post">
+                    <input type="text" name="object_type" value="{{ object_type }}" hidden />
+                    <input type="text" name="object_id" value="{{ object_id }}" hidden />
+                    <input type="text" name="lpath" value="{{ logical_path }}" hidden />
+                    <input type="text" name="entity_name" value="{{ p['name'] }}" hidden />
+
+                    <tr>
+                        <td>{{ p['name'] }}#{{ p['zone'] }}</td>
+                        <td>{{ p['type'] }}</td>
+                        <td>{{ p['perm'] }}</td>
+                        <td><button>Remove</button></td>
+                    </tr>
+                </form>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>- No permissions found -</p>
+        {% endif %}
+    </details>
+</div>

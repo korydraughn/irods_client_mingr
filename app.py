@@ -179,7 +179,7 @@ def data_object_info():
 
         # Convert replica status integer to its symbolic name for readability.
         sym_name_idx = int(r[3])
-        r[3] = ['stale', 'good', 'intermediate', 'read-locked', 'write-locked'][sym_name_idx]
+        r[3] += [' (stale)', ' (good)', ' (intermediate)', ' (read-locked)', ' (write-locked)'][sym_name_idx]
 
     r = requests.get(IRODS_HTTP_API_URL + '/query', headers={'Authorization': f'Bearer {session["bearer_token"]}'}, params={
         'op': 'execute_genquery',
@@ -218,6 +218,8 @@ def data_object_info():
         title='Data Object Information',
         logical_path=logical_path,
         data_id=data_id,
+        object_id=data_id,
+        object_type='data_object',
         replicas=replicas,
         metadata=metadata,
         permissions=r_json['permissions']
@@ -270,12 +272,36 @@ def collection_info():
     r_json['created_at'] = ctime
     r_json['modified_at'] = datetime.datetime.utcfromtimestamp(r_json['modified_at'])
 
+    coll_info = r_json
+
+    permissions = r_json['permissions']
+    r_json.pop('permissions')
+
+    r = requests.get(IRODS_HTTP_API_URL + '/query', headers={'Authorization': f'Bearer {session["bearer_token"]}'}, params={
+        'op': 'execute_genquery',
+        'query': f"select META_COLL_ATTR_NAME, META_COLL_ATTR_VALUE, META_COLL_ATTR_UNITS where COLL_NAME = '{logical_path}'",
+        'count': 250
+    })
+
+    if r.status_code != 200:
+        app.logger.error('Error retrieving metadata for data object.')
+        abort(500)
+
+    r_json = r.json()
+    if r_json['irods_response']['status_code'] < 0:
+        app.logger.error(r_json['irods_response']['status_message'])
+        abort(500)
+
     return render_template(
         'collection_info.html',
         title='Collection Information',
         logical_path=logical_path,
         coll_id=coll_id,
-        coll_info=r_json
+        object_id=coll_id,
+        object_type='collection',
+        coll_info=coll_info,
+        metadata=r_json['rows'],
+        permissions=permissions
     )
 
 @app.get('/query')
@@ -354,11 +380,27 @@ def add_metadata():
     if 'username' not in session:
         abort(401)
 
-    if request.form.get('entity_type', None) != 'data_object':
-        app.logger.error('only data objects are supported.')
+    app.logger.debug(f'object_type = [{request.form.get("object_type", None)}]')
+    app.logger.debug(f'object_id   = [{request.form.get("object_id", None)}]')
+    app.logger.debug(f'lpath       = [{request.form.get("lpath", None)}]')
+    app.logger.debug(f'attribute   = [{request.form.get("attribute", None)}]')
+    app.logger.debug(f'value       = [{request.form.get("value", None)}]')
+    app.logger.debug(f'units       = [{request.form.get("units", None)}]')
+
+    object_type = request.form.get('object_type', None)
+    if not object_type:
+        app.logger.error('Missing [object_type] argument.')
         abort(400)
 
-    r = requests.post(IRODS_HTTP_API_URL + '/data-objects', headers={'Authorization': f'Bearer {session["bearer_token"]}'}, data={
+    object_id = request.form.get('object_id', None)
+    if not object_id:
+        app.logger.error('Missing [object_id] argument.')
+        abort(400)
+
+    endpoint_url = (IRODS_HTTP_API_URL + '/collections') if 'collection' == object_type \
+        else (IRODS_HTTP_API_URL + '/data-objects')
+
+    r = requests.post(endpoint_url, headers={'Authorization': f'Bearer {session["bearer_token"]}'}, data={
         'op': 'modify_metadata',
         'lpath': request.form.get('lpath', None),
         'operations': json.dumps([{
@@ -378,18 +420,37 @@ def add_metadata():
         app.logger.error('Error adding metadata to data object.')
         abort(500)
 
-    return redirect(url_for('data_object_info', data_id=request.form.get('data_id')))
+    if 'data_object' == object_type:
+        return redirect(url_for('data_object_info', data_id=object_id))
+
+    return redirect(url_for('collection_info', coll_id=object_id))
 
 @app.route('/remove-metadata', methods=["POST"])
 def remove_metadata():
     if 'username' not in session:
         abort(401)
 
-    if request.form.get('entity_type', None) != 'data_object':
-        app.logger.error('only data objects are supported.')
+    app.logger.debug(f'object_type = [{request.form.get("object_type", None)}]')
+    app.logger.debug(f'object_id   = [{request.form.get("object_id", None)}]')
+    app.logger.debug(f'lpath       = [{request.form.get("lpath", None)}]')
+    app.logger.debug(f'attribute   = [{request.form.get("attribute", None)}]')
+    app.logger.debug(f'value       = [{request.form.get("value", None)}]')
+    app.logger.debug(f'units       = [{request.form.get("units", None)}]')
+
+    object_type = request.form.get('object_type', None)
+    if not object_type:
+        app.logger.error('Missing [object_type] argument.')
         abort(400)
 
-    r = requests.post(IRODS_HTTP_API_URL + '/data-objects', headers={'Authorization': f'Bearer {session["bearer_token"]}'}, data={
+    object_id = request.form.get('object_id', None)
+    if not object_id:
+        app.logger.error('Missing [object_id] argument.')
+        abort(400)
+
+    endpoint_url = (IRODS_HTTP_API_URL + '/collections') if 'collection' == object_type \
+        else (IRODS_HTTP_API_URL + '/data-objects')
+
+    r = requests.post(endpoint_url, headers={'Authorization': f'Bearer {session["bearer_token"]}'}, data={
         'op': 'modify_metadata',
         'lpath': request.form.get('lpath', None),
         'operations': json.dumps([{
@@ -409,19 +470,36 @@ def remove_metadata():
         app.logger.error('Error removing metadata from data object.')
         abort(500)
 
-    return redirect(url_for('data_object_info', data_id=request.form.get('data_id')))
+    if 'data_object' == object_type:
+        return redirect(url_for('data_object_info', data_id=object_id))
+
+    return redirect(url_for('collection_info', coll_id=object_id))
 
 @app.route('/add-permission', methods=["POST"])
 def add_permission():
     if 'username' not in session:
         abort(401)
 
-    app.logger.debug(f'data_id     = [{request.form.get("data_id", None)}]')
+    app.logger.debug(f'object_type = [{request.form.get("object_type", None)}]')
+    app.logger.debug(f'object_id   = [{request.form.get("object_id", None)}]')
     app.logger.debug(f'lpath       = [{request.form.get("lpath", None)}]')
     app.logger.debug(f'entity_name = [{request.form.get("entity_name", None)}]')
     app.logger.debug(f'permission  = [{request.form.get("permission", None)}]')
 
-    r = requests.post(IRODS_HTTP_API_URL + '/data-objects', headers={'Authorization': f'Bearer {session["bearer_token"]}'}, data={
+    object_type = request.form.get('object_type', None)
+    if not object_type:
+        app.logger.error('Missing [object_type] argument.')
+        abort(400)
+
+    object_id = request.form.get('object_id', None)
+    if not object_id:
+        app.logger.error('Missing [object_id] argument.')
+        abort(400)
+
+    endpoint_url = (IRODS_HTTP_API_URL + '/collections') if 'collection' == object_type \
+        else (IRODS_HTTP_API_URL + '/data-objects')
+
+    r = requests.post(endpoint_url, headers={'Authorization': f'Bearer {session["bearer_token"]}'}, data={
         'op': 'modify_permissions',
         'lpath': request.form.get('lpath', None),
         'operations': json.dumps([{
@@ -431,25 +509,43 @@ def add_permission():
     })
 
     if r.status_code != 200:
-        app.logger.error('(http) Error adding permission to data object.')
+        app.logger.error('(http) Error adding permission.')
         abort(500)
 
     r_json = r.json()
     if r_json['irods_response']['status_code'] < 0:
-        app.logger.error('(irods) Error adding permission to data object.')
+        app.logger.error('(irods) Error adding permission.')
         abort(500)
 
-    return redirect(url_for('data_object_info', data_id=request.form.get('data_id')))
+    if 'data_object' == object_type:
+        return redirect(url_for('data_object_info', data_id=object_id))
+
+    return redirect(url_for('collection_info', coll_id=object_id))
 
 @app.route('/remove-permission', methods=["POST"])
 def remove_permission():
     if 'username' not in session:
         abort(401)
 
+    app.logger.debug(f'object_type = [{request.form.get("object_type", None)}]')
+    app.logger.debug(f'object_id   = [{request.form.get("object_id", None)}]')
     app.logger.debug(f'lpath       = [{request.form.get("lpath", None)}]')
     app.logger.debug(f'entity_name = [{request.form.get("entity_name", None)}]')
 
-    r = requests.post(IRODS_HTTP_API_URL + '/data-objects', headers={'Authorization': f'Bearer {session["bearer_token"]}'}, data={
+    object_type = request.form.get('object_type', None)
+    if not object_type:
+        app.logger.error('Missing [object_type] argument.')
+        abort(400)
+
+    object_id = request.form.get('object_id', None)
+    if not object_id:
+        app.logger.error('Missing [object_id] argument.')
+        abort(400)
+
+    endpoint_url = (IRODS_HTTP_API_URL + '/collections') if 'collection' == object_type \
+        else (IRODS_HTTP_API_URL + '/data-objects')
+
+    r = requests.post(endpoint_url, headers={'Authorization': f'Bearer {session["bearer_token"]}'}, data={
         'op': 'modify_permissions',
         'lpath': request.form.get('lpath', None),
         'operations': json.dumps([{
@@ -459,15 +555,18 @@ def remove_permission():
     })
 
     if r.status_code != 200:
-        app.logger.error('(http) Error removing permission from data object.')
+        app.logger.error('(http) Error removing permission.')
         abort(500)
 
     r_json = r.json()
     if r_json['irods_response']['status_code'] < 0:
-        app.logger.error('(irods) Error removing permission from data object.')
+        app.logger.error('(irods) Error removing permission.')
         abort(500)
 
-    return redirect(url_for('data_object_info', data_id=request.form.get('data_id')))
+    if 'data_object' == object_type:
+        return redirect(url_for('data_object_info', data_id=object_id))
+
+    return redirect(url_for('collection_info', coll_id=object_id))
 
 @app.get('/about')
 def about():

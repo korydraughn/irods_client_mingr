@@ -4,30 +4,16 @@
     <style>
         .grid-container {
             display: grid;
-            grid-template-columns: auto auto;
+            grid-template-columns: 15em auto;
         }
 
         .permission-container {
             margin-bottom: 15px;
         }
 
-        .add-metadata-container form {
+        .data-object-buttons {
             display: flex;
             gap: 10px;
-            #grid-template-columns: auto auto auto;
-            #gap: 15px;
-        }
-
-        .add-permission-container form {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            #grid-template-columns: auto auto auto;
-            #gap: 15px;
-        }
-
-        .view-remove-permissions {
-            #margin-top: 15px;
         }
     </style>
 {% endblock %}
@@ -36,12 +22,17 @@
     <h2>Data Object: {{ logical_path }}</h2>
     <h2>Data ID: {{ data_id }}</h2>
 
-    <p>
+    <div class="data-object-buttons">
+        <form action="" method="post">
+            <input name="data_id" type="text" value="{{ data_id }}" hidden required />
+            <button>Download Data Object</button>
+        </form>
+
         <form action="" method="post">
             <input name="data_id" type="text" value="{{ data_id }}" hidden required />
             <button>Delete Data Object</button>
         </form>
-    </p>
+    </div>
 
     <h3>Replica Information</h3>
 
@@ -71,112 +62,13 @@
         <div>Modified At:</div>
         <div>{{ d[9] }}</div>
     </div>
+        {% if loop.nextitem %}
+    <br />
+        {% endif %}
     {% endfor %}
 
-    <h3>Metadata</h3>
-
-    <div class="add-metadata-container">
-        <form action="{{ url_for('add_metadata') }}" method="post">
-            <input type="text" name="entity_type" value="data_object" hidden />
-            <input type="text" name="data_id" value="{{ data_id }}" hidden />
-            <input type="text" name="lpath" value="{{ logical_path }}" hidden />
-            <div><input type="text" name="attribute" placeholder="Attribute Name" /></div>
-            <div><input type="text" name="value" placeholder="Attribute Value" /></div>
-            <div><input type="text" name="units" placeholder="Attribute Units" /></div>
-            <button>Add Metadata</button>
-        </form>
-    </div>
-
-    <details>
-        <summary class="view-remove-metadata">View / Remove Metadata</summary>
-
-        {% if permissions %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Attribute Name</th>
-                    <th>Attribute Value</th>
-                    <th>Attribute Units</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                {% for m in metadata %}
-                <form action="{{ url_for('remove_metadata') }}" method="post">
-                    <input type="text" name="entity_type" value="data_object" hidden />
-                    <input type="text" name="data_id" value="{{ data_id }}" hidden />
-                    <input type="text" name="lpath" value="{{ logical_path }}" hidden />
-                    <input type="text" name="attribute" value="{{ m[0] }}" hidden />
-                    <input type="text" name="value" value="{{ m[1] }}" hidden />
-                    <input type="text" name="units" value="{{ m[2] }}" hidden />
-                    <tr>
-                        <td>{{ m[0] }}</td>
-                        <td>{{ m[1] }}</td>
-                        <td>{{ m[2] }}</td>
-                        <td><button>Remove</button></td>
-                    </tr>
-                </form>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <p>- No permissions found -</p>
-        {% endif %}
-    </details>
-
-    <h3>Permissions</h3>
-
-    <div class="add-permission-container">
-        <form action="{{ url_for('add_permission') }}" method="post">
-            <input type="text" name="data_id" value="{{ data_id }}" hidden />
-            <input type="text" name="lpath" value="{{ logical_path }}" hidden />
-            <div><input type="text" name="entity_name" placeholder="Username (unqualified)" /></div>
-            <div>
-                <select name="permission">
-                    <option value="read">read</option>
-                    <option value="write">write</option>
-                    <option value="own">own</option>
-                </select>
-            </div>
-            <button>Add Permission</button>
-        </form>
-    </div>
-
-    <details>
-        <summary class="view-remove-permissions">View / Remove Permissions</summary>
-
-        {% if permissions %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Entity Name</th>
-                    <th>Entity Type</th>
-                    <th>Permission</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                {% for p in permissions %}
-                <form action="{{ url_for('remove_permission') }}" method="post">
-                    <input type="text" name="data_id" value="{{ data_id }}" hidden />
-                    <input type="text" name="lpath" value="{{ logical_path }}" hidden />
-                    <input type="text" name="entity_name" value="{{ p['name'] }}" hidden />
-                    <tr>
-                        <td>{{ p['name'] }}#{{ p['zone'] }}</td>
-                        <td>{{ p['type'] }}</td>
-                        <td>{{ p['perm'] }}</td>
-                        <td><button>Remove</button></td>
-                    </tr>
-                </form>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <p>- No permissions found -</p>
-        {% endif %}
-    </details>
+    {% include 'metadata.html' %}
+    {% include 'permissions.html' %}
 {% endblock %}
 
 {% block js_script %}{% endblock %}

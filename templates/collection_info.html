@@ -37,24 +37,8 @@
         <div>{{ coll_info['modified_at'] }}</div>
     </div>
 
-    <h3>Permissions</h3>
-
-    {% if coll_info['permissions'] %}
-        {% for p in coll_info['permissions'] %}
-        <div class="grid-container permission-container">
-            <div>Username:</div>
-            <div>{{ p['name'] }}#{{ p['zone'] }}</div>
-
-            <div>User Type:</div>
-            <div>{{ p['type'] }}</div>
-
-            <div>Permission:</div>
-            <div>{{ p['perm'] }}</div>
-        </div>
-        {% endfor %}
-    {% else %}
-    <p>- No permissions found -</p>
-    {% endif %}
+    {% include 'metadata.html' %}
+    {% include 'permissions.html' %}
 {% endblock %}
 
 {% block js_script %}{% endblock %}

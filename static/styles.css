@@ -21,3 +21,37 @@ body {
 .nav-username {
     margin-bottom: 25px;
 }
+
+.metadata-manager-container, .permissions-manager-container {
+    margin-top: 3em;
+}
+
+.add-metadata-container form, .add-permission-container form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1em;
+}
+
+.metadata-table, .permissions-table {
+    padding-top: 1em;
+}
+
+summary {
+    cursor: pointer;
+}
+
+th {
+    text-align: start;
+}
+
+th, td {
+    padding: 0.25rem 1.5rem;
+}
+
+th:nth-child(1), td:nth-child(1) {
+    padding-left: 0;
+}
+
+tbody > tr:hover {
+    background-color: lightgreen;
+}

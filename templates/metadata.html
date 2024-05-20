@@ -1,0 +1,56 @@
+<div class="metadata-manager-container">
+    <h3>Metadata</h3>
+
+    <div class="add-metadata-container">
+        <form action="{{ url_for('add_metadata') }}" method="post">
+            <input type="text" name="object_type" value="{{ object_type }}" hidden />
+            <input type="text" name="object_id" value="{{ object_id }}" hidden />
+            <input type="text" name="lpath" value="{{ logical_path }}" hidden />
+
+            <div><input type="text" name="attribute" placeholder="Attribute Name" /></div>
+            <div><input type="text" name="value" placeholder="Attribute Value" /></div>
+            <div><input type="text" name="units" placeholder="Attribute Units" /></div>
+
+            <button>Add Metadata</button>
+        </form>
+    </div>
+
+    <details>
+        <summary>View / Remove Metadata</summary>
+
+        {% if metadata %}
+        <table class="metadata-table">
+            <thead>
+                <tr>
+                    <th>Attribute Name</th>
+                    <th>Attribute Value</th>
+                    <th>Attribute Units</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for m in metadata %}
+                <form action="{{ url_for('remove_metadata') }}" method="post">
+                    <input type="text" name="object_type" value="{{ object_type }}" hidden />
+                    <input type="text" name="object_id" value="{{ object_id }}" hidden />
+                    <input type="text" name="lpath" value="{{ logical_path }}" hidden />
+                    <input type="text" name="attribute" value="{{ m[0] }}" hidden />
+                    <input type="text" name="value" value="{{ m[1] }}" hidden />
+                    <input type="text" name="units" value="{{ m[2] }}" hidden />
+
+                    <tr>
+                        <td>{{ m[0] }}</td>
+                        <td>{{ m[1] }}</td>
+                        <td>{{ m[2] }}</td>
+                        <td><button>Remove</button></td>
+                    </tr>
+                </form>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>- No metadata found -</p>
+        {% endif %}
+    </details>
+</div>

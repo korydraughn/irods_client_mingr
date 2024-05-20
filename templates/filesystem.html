@@ -25,8 +25,10 @@
                 {% for id, _, dn in data_objects %}
                 <tr>
                     <td>{{ dn }}</td>
-                    <td><button id="view_details" data-irods-data-id="{{ id }}">View</button></td>
-                    <td><button id="delete" data-irods-data-id="{{ id }}">Delete</button></td>
+                    <td>
+                        <button id="view_details" data-irods-data-id="{{ id }}">View</button>
+                        <button id="delete" data-irods-data-id="{{ id }}">Delete</button>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -48,7 +50,7 @@
         <table>
             <thead>
                 <tr>
-                    <th style="text-align: start;">Name</th>
+                    <th style="text-align: start;">Path</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -57,9 +59,11 @@
                 {% for id, cn in collections %}
                 <tr>
                     <td>{{ cn }}</td>
-                    <td><button id="go_to" data-irods-coll-id="{{ id }}">Go To</button></td>
-                    <td><button id="view_details" data-irods-coll-id="{{ id }}">View</button></td>
-                    <td><button id="delete" data-irods-coll-id="{{ id }}">Delete</button></td>
+                    <td>
+                        <button id="go_to" data-irods-coll-id="{{ id }}">Go To</button>
+                        <button id="view_details" data-irods-coll-id="{{ id }}">View</button>
+                        <button id="delete" data-irods-coll-id="{{ id }}">Delete</button>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
