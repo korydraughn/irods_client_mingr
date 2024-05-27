@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, abort, session, redirect, url_for, g
+from werkzeug.utils import secure_filename
 
 import datetime
 import json
@@ -568,10 +569,65 @@ def remove_permission():
 
     return redirect(url_for('collection_info', coll_id=object_id))
 
+@app.route('/upload-file', methods=["POST"])
+def upload_file():
+    if 'username' not in session:
+        return abort(401)
+
+    # Check if the request has the file part.
+    if 'file' not in request.files:
+        app.logger.error('Missing file part.')
+        abort(400)
+
+    f = request.files['file']
+
+    # If the user did not select a file, the browser submits an
+    # empty file without a filename.
+    if f.filename == '':
+        app.logger.error('No selected file.')
+        abort(400)
+
+    filename = secure_filename(f.filename)
+    app.logger.debug(f'filename = [{filename}]')
+    #app.logger.debug(f'file contents = [{f.read()}]')
+
+    collection = request.form.get("collection", None)
+
+    # TODO Use parallel-write-init to avoid issues with replication resources.
+
+    def write_chunk(fh, truncate=1, append=0, chunk_size=8192):
+        data = fh.read(chunk_size)
+
+        if not data:
+            return False
+
+        hdrs = headers={'Authorization': f'Bearer {session["bearer_token"]}'}
+        r = requests.post(IRODS_HTTP_API_URL + '/data-objects', headers=hdrs, data={
+            'op': 'write',
+            'lpath': f'{collection}/{filename}',
+            'bytes': data,
+            'truncate': truncate,
+            'append': append
+        })
+
+        if r.status_code != 200:
+            app.logger.error('HTTP error writing bytes to data object.')
+            abort(500)
+
+        r_json = r.json()
+        if r_json['irods_response']['status_code'] < 0:
+            app.logger.error('iRODS error writing bytes to data object.')
+            abort(500)
+
+        return True
+
+    if write_chunk(f):
+        while True:
+            if not write_chunk(f, truncate=0, append=1):
+                break
+
+    return redirect(url_for('filesystem', collection=collection))
+
 @app.get('/about')
 def about():
     return render_template('about.html', title='About')
-
-@app.get('/contact')
-def contact():
-    return render_template('contact.html', title='Contact')

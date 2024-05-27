@@ -3,7 +3,7 @@
 {% block content %}
     <h2>Current Working Collection: {{ current_collection }}</h2>
 
-    <form action="{{ url_for('filesystem') }}" method="get">
+    <form id="go_to_collection_form" action="{{ url_for('filesystem') }}" method="get">
         <label>Change Collection To: </label>
         <input name="collection" type="text" value="{{ current_collection }}" required />
         <button>Go</button>
@@ -11,6 +11,18 @@
 
     <div>
         <h3>Data Objects ({{ total_data_objects }})</h3>
+
+        <div>
+            <form
+                id="upload_file_form"
+                action="{{ url_for('upload_file') }}"
+                method="post"
+                enctype="multipart/form-data">
+                <input name="collection" type="text" value="{{ current_collection }}" required hidden />
+                <input name="file" type="file" required />
+                <button>Upload File</button>
+            </form>
+        </div>
 
         {% if data_objects %}
         <table>
@@ -22,11 +34,12 @@
             </thead>
 
             <tbody id="data_objects">
-                {% for id, _, dn in data_objects %}
+                {% for id, cn, dn in data_objects %}
                 <tr>
                     <td>{{ dn }}</td>
                     <td>
                         <button id="view_details" data-irods-data-id="{{ id }}">View</button>
+                        <button id="download" data-irods-lpath="{{ cn }}/{{ dn }}">Download</button>
                         <button id="delete" data-irods-data-id="{{ id }}">Delete</button>
                     </td>
                 </tr>
@@ -60,8 +73,8 @@
                 <tr>
                     <td>{{ cn }}</td>
                     <td>
-                        <button id="go_to" data-irods-coll-id="{{ id }}">Go To</button>
                         <button id="view_details" data-irods-coll-id="{{ id }}">View</button>
+                        <button id="go_to" data-irods-lpath="{{ cn }}">Go To</button>
                         <button id="delete" data-irods-coll-id="{{ id }}">Delete</button>
                     </td>
                 </tr>
@@ -89,11 +102,22 @@
             $("#collections button#view_details").on("click", function() {
                 // Find the collection id associated with the table row and submit
                 // a request to fetch the details of the collection.
-                var id = $(this).data('irods-coll-id');
+                const id = $(this).data('irods-coll-id');
                 console.log('view details id = ' + id);
 
-                var $form = $('form#for_collection_info');
+                const $form = $('form#for_collection_info');
                 $form.find('input').val(id);
+                $form.trigger('submit');
+            });
+
+            $("#collections button#go_to").on("click", function() {
+                // Find the collection name associated with the table row and submit
+                // a request to fetch the details of the collection.
+                const lpath = $(this).data('irods-lpath');
+                console.log('text = ' + lpath);
+
+                const $form = $('form#go_to_collection_form');
+                $form.find('input').val(lpath);
                 $form.trigger('submit');
             });
 
@@ -102,19 +126,30 @@
 
                 // Find the collection id associated with the table row and submit
                 // a request to fetch the details of the collection.
-                var id = $(this).data('irods-coll-id');
+                const id = $(this).data('irods-coll-id');
                 console.log('delete id = ' + id);
+
+                if (confirm('Are you sure you want to delete the collection?')) {
+                    console.log('TODO - Delete the collection (recursively)?');
+                }
+            });
+
+            $("#data_objects button#download").on("click", function() {
+                const lpath = $(this).data('irods-lpath');
+                console.log('lpath = ' + lpath);
+
+                //const $form = $('form#for_data_object_info');
+                //$form.find('input').val(id);
+                //$form.trigger('submit');
             });
 
             $("#data_objects button#view_details").on("click", function() {
-                console.log('clicked view details button!');
-
                 // Find the data id associated with the table row and submit
                 // a request to fetch the details of the data object.
-                var id = $(this).data('irods-data-id');
+                const id = $(this).data('irods-data-id');
                 console.log('view details id = ' + id);
 
-                var $form = $('form#for_data_object_info');
+                const $form = $('form#for_data_object_info');
                 $form.find('input').val(id);
                 $form.trigger('submit');
             });
@@ -124,8 +159,12 @@
 
                 // Find the data id associated with the table row and submit
                 // a request to fetch the details of the data object.
-                var id = $(this).data('irods-data-id');
+                const id = $(this).data('irods-data-id');
                 console.log('delete id = ' + id);
+
+                if (confirm('Are you sure you want to delete the data object?')) {
+                    console.log('TODO - Delete the data object');
+                }
             });
         });
     </script>
